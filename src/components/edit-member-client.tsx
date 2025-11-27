@@ -145,42 +145,43 @@ export function EditMemberClient({ member }: EditMemberClientProps) {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Edit Member</h1>
-        <p className="mt-2 text-gray-600">Update member information</p>
+    <div className="mx-auto max-w-2xl px-3 sm:px-4 py-4 sm:py-6 lg:py-8">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Edit Member</h1>
+        <p className="mt-1 sm:mt-2 text-sm sm:text-base text-gray-600">Update member information</p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Member Information</CardTitle>
+      <Card className="border-0 shadow-xl">
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-lg sm:text-xl lg:text-2xl">Member Information</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 sm:p-6">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 sm:space-y-6">
               {/* Profile Picture */}
               <div className="space-y-2">
-                <FormLabel>Profile Picture</FormLabel>
-                <div className="flex items-center gap-4">
+                <FormLabel className="text-sm sm:text-base">Profile Picture</FormLabel>
+                <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
                   {previewUrl ? (
                     <img
                       src={previewUrl}
                       alt="Preview"
-                      className="h-24 w-24 rounded-full object-cover"
+                      className="h-20 w-20 sm:h-24 sm:w-24 rounded-full object-cover flex-shrink-0"
                     />
                   ) : (
-                    <div className="h-24 w-24 rounded-full bg-muted flex items-center justify-center">
-                      <Upload className="h-8 w-8 text-muted-foreground" />
+                    <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                      <Upload className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground" />
                     </div>
                   )}
-                  <div>
+                  <div className="w-full">
                     <Input
                       type="file"
                       accept="image/*"
                       onChange={handleFileChange}
                       disabled={loading}
+                      className="text-sm sm:text-base"
                     />
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                       Upload a new photo to replace the current one
                     </p>
                   </div>
@@ -193,9 +194,9 @@ export function EditMemberClient({ member }: EditMemberClientProps) {
                 name="full_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Full Name *</FormLabel>
+                    <FormLabel className="text-sm sm:text-base">Full Name *</FormLabel>
                     <FormControl>
-                      <Input placeholder="John Doe" {...field} disabled={loading} />
+                      <Input placeholder="John Doe" {...field} disabled={loading} className="h-10 sm:h-11 text-sm sm:text-base" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -208,10 +209,10 @@ export function EditMemberClient({ member }: EditMemberClientProps) {
                 name="gender"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Gender</FormLabel>
+                    <FormLabel className="text-sm sm:text-base">Gender</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value} disabled={loading}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="h-10 sm:h-11 text-sm sm:text-base">
                           <SelectValue placeholder="Select gender" />
                         </SelectTrigger>
                       </FormControl>
@@ -314,9 +315,9 @@ export function EditMemberClient({ member }: EditMemberClientProps) {
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Phone Number *</FormLabel>
+                    <FormLabel className="text-sm sm:text-base">Phone Number *</FormLabel>
                     <FormControl>
-                      <Input placeholder="+1 (555) 123-4567" {...field} disabled={loading} />
+                      <Input placeholder="+1 (555) 123-4567" {...field} disabled={loading} className="h-10 sm:h-11 text-sm sm:text-base" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -329,13 +330,14 @@ export function EditMemberClient({ member }: EditMemberClientProps) {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel className="text-sm sm:text-base">Email</FormLabel>
                     <FormControl>
                       <Input
                         type="email"
                         placeholder="john@example.com"
                         {...field}
                         disabled={loading}
+                        className="h-10 sm:h-11 text-sm sm:text-base"
                       />
                     </FormControl>
                     <FormMessage />
@@ -349,9 +351,9 @@ export function EditMemberClient({ member }: EditMemberClientProps) {
                 name="address"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Address</FormLabel>
+                    <FormLabel className="text-sm sm:text-base">Address</FormLabel>
                     <FormControl>
-                      <Input placeholder="123 Main St, City, State ZIP" {...field} disabled={loading} />
+                      <Input placeholder="123 Main St, City, State ZIP" {...field} disabled={loading} className="h-10 sm:h-11 text-sm sm:text-base" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -359,13 +361,13 @@ export function EditMemberClient({ member }: EditMemberClientProps) {
               />
 
               {error && (
-                <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
+                <div className="text-xs sm:text-sm text-destructive bg-destructive/10 p-3 rounded-md">
                   {error}
                 </div>
               )}
 
-              <div className="flex gap-4">
-                <Button type="submit" disabled={loading} className="flex-1">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                <Button type="submit" disabled={loading} className="flex-1 h-10 sm:h-11 text-sm sm:text-base font-semibold">
                   {loading ? 'Saving Changes...' : 'Save Changes'}
                 </Button>
                 <Button
@@ -373,6 +375,7 @@ export function EditMemberClient({ member }: EditMemberClientProps) {
                   variant="outline"
                   onClick={() => router.back()}
                   disabled={loading}
+                  className="h-10 sm:h-11 px-6 sm:px-8 text-sm sm:text-base font-semibold"
                 >
                   Cancel
                 </Button>

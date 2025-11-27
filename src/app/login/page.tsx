@@ -45,30 +45,30 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-3 sm:p-4">
       <Card className="w-full max-w-md bg-gradient-to-br from-blue-50 via-white to-yellow-50 border-0 shadow-2xl">
-        <CardHeader className="space-y-4">
+        <CardHeader className="space-y-3 sm:space-y-4 p-5 sm:p-6">
           <div className="flex justify-center">
             <Image 
               src="/logo.png" 
               alt="COP Logo" 
-              width={80} 
-              height={80}
-              className="object-contain"
+              width={64} 
+              height={64}
+              className="object-contain sm:w-20 sm:h-20"
             />
           </div>
-          <div className="text-center space-y-1">
-            <CardTitle className="text-2xl font-bold">Church of Pentecost</CardTitle>
-            <p className="text-lg font-medium text-gray-700">Macedonia Assembly</p>
+          <div className="text-center space-y-0.5 sm:space-y-1">
+            <CardTitle className="text-xl sm:text-2xl font-bold">Church of Pentecost</CardTitle>
+            <p className="text-base sm:text-lg font-medium text-gray-700">Macedonia Assembly</p>
           </div>
-          <CardDescription className="text-center">
+          <CardDescription className="text-center text-sm sm:text-base">
             Sign in to manage member information
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-5 sm:p-6">
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-sm sm:text-base">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -77,10 +77,11 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={loading}
+                className="h-10 sm:h-11 text-sm sm:text-base"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="text-sm sm:text-base">Password</Label>
               <Input
                 id="password"
                 type="password"
@@ -89,14 +90,15 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 disabled={loading}
+                className="h-10 sm:h-11 text-sm sm:text-base"
               />
             </div>
             {error && (
-              <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
+              <div className="text-xs sm:text-sm text-destructive bg-destructive/10 p-3 rounded-md">
                 {error}
               </div>
             )}
-            <Button type="submit" className="w-full bg-blue-900 hover:bg-blue-950" disabled={loading}>
+            <Button type="submit" className="w-full bg-blue-900 hover:bg-blue-950 h-10 sm:h-11 text-sm sm:text-base font-semibold" disabled={loading}>
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>

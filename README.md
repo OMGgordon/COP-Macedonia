@@ -14,6 +14,7 @@ An admin-only web application for managing church member information with birthd
 - View upcoming birthdays (next 7 days)
 - Automatic age calculation
 - Birthday notifications with contact information
+- **Automated Email Notifications** - Daily email reminders sent to admin with today's and upcoming birthdays
 
 🔐 **Admin-Only Access**
 - Secure authentication with Supabase Auth
@@ -33,6 +34,8 @@ An admin-only web application for managing church member information with birthd
 - **Database:** Supabase (PostgreSQL)
 - **Authentication:** Supabase Auth
 - **Storage:** Supabase Storage
+- **Email Service:** Resend (birthday notifications)
+- **Cron Jobs:** Vercel Cron (daily email automation)
 - **Form Validation:** React Hook Form + Zod
 - **Date Handling:** date-fns
 - **Icons:** Lucide React
@@ -66,11 +69,25 @@ Follow the detailed instructions in [SUPABASE_SETUP.md](./SUPABASE_SETUP.md) to:
 Create a `.env.local` file in the root directory:
 
 ```env
+# Supabase Configuration
 NEXT_PUBLIC_SUPABASE_URL=your-supabase-project-url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+
+# Resend Configuration (for email notifications)
+RESEND_API_KEY=your-resend-api-key
+
+# Admin Email for Birthday Notifications
+ADMIN_EMAIL=your-admin-email@example.com
+
+# Cron Job Security (generate with: openssl rand -base64 32)
+CRON_SECRET=your-random-secret
 ```
 
-Get these values from your Supabase project settings (Settings → API).
+**Getting the values:**
+- Supabase values: From your Supabase project (Settings → API)
+- Resend API key: Sign up at [resend.com](https://resend.com), then get API key from [resend.com/api-keys](https://resend.com/api-keys)
+- Admin email: The email address where birthday notifications will be sent
+- Cron secret: Generate with `openssl rand -base64 32` (or any random string)
 
 ### 4. Run the Development Server
 
@@ -164,7 +181,12 @@ See `supabase/migrations/001_create_members_table.sql` for the full schema.
 4. Add environment variables:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `RESEND_API_KEY`
+   - `ADMIN_EMAIL`
+   - `CRON_SECRET`
 5. Click "Deploy"
+
+**Note:** The Vercel Cron job for birthday email notifications will automatically run daily at 6 AM UTC once deployed.
 
 ### Option 2: Deploy via CLI
 
@@ -178,6 +200,9 @@ vercel
 # Set environment variables
 vercel env add NEXT_PUBLIC_SUPABASE_URL
 vercel env add NEXT_PUBLIC_SUPABASE_ANON_KEY
+vercel env add RESEND_API_KEY
+vercel env add ADMIN_EMAIL
+vercel env add CRON_SECRET
 
 # Deploy to production
 vercel --prod
@@ -215,11 +240,29 @@ npm run lint
 - Ensure the admin user exists in Supabase Auth
 - Clear browser cookies and try again
 
+## Email Notifications
+
+The app automatically sends daily birthday reminder emails to the admin:
+
+- **Schedule:** Every day at 6:00 AM UTC
+- **Content:** Lists members with birthdays today and upcoming birthdays (next 7 days)
+- **Powered by:** Resend email service + Vercel Cron Jobs
+- **Setup:** Configure `RESEND_API_KEY` and `ADMIN_EMAIL` environment variables
+
+### Testing Email Notifications Locally
+
+You can manually trigger the cron job endpoint:
+
+```bash
+curl -X GET http://localhost:3000/api/cron/birthday-notifications \
+  -H "Authorization: Bearer your-cron-secret"
+```
+
 ## Future Enhancements
 
 Potential features to add:
 
-- [ ] Email birthday reminders (using Supabase Edge Functions)
+- [x] Email birthday reminders (implemented with Resend + Vercel Cron)
 - [ ] Export member list to CSV/PDF
 - [ ] Attendance tracking
 - [ ] Groups/ministries organization
