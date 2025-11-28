@@ -395,7 +395,7 @@ export function EditMemberClient({ member }: EditMemberClientProps) {
                 name="address"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm sm:text-base">Address *</FormLabel>
+                    <FormLabel className="text-sm sm:text-base">Address  *</FormLabel>
                     <FormControl>
                       <Input placeholder="123 Main St, City, State ZIP" {...field} disabled={loading} className="h-10 sm:h-11 text-sm sm:text-base" />
                     </FormControl>
