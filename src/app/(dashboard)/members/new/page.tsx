@@ -25,7 +25,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { CalendarIcon, Upload } from 'lucide-react'
+import { CalendarIcon, Upload, Camera, Image as ImageIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import React from 'react'
 import { format } from 'date-fns'
@@ -38,7 +38,7 @@ const memberFormSchema = z.object({
   }),
   phone: z.string().min(10, 'Phone number must be at least 10 characters'),
   email: z.string().email('Invalid email address').optional().or(z.literal('')),
-  address: z.string().optional(),
+  address: z.string().min(1, 'Address is required'),
 })
 
 type MemberFormValues = z.infer<typeof memberFormSchema>
@@ -50,6 +50,9 @@ export default function NewMemberPage() {
   const [error, setError] = useState<string | null>(null)
   const [profilePicture, setProfilePicture] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [showPhotoOptions, setShowPhotoOptions] = useState(false)
+  const fileInputRef = React.useRef<HTMLInputElement>(null)
+  const cameraInputRef = React.useRef<HTMLInputElement>(null)
 
   const form = useForm<MemberFormValues>({
     resolver: zodResolver(memberFormSchema),
@@ -100,13 +103,37 @@ export default function NewMemberPage() {
     setError(null)
 
     try {
-      // First, insert the member
+      // Check for duplicates based on required fields
+      const formattedDob = format(values.date_of_birth, 'yyyy-MM-dd')
+      const { data: existingMembers, error: checkError } = await supabase
+        .from('members')
+        .select('full_name')
+        .eq('date_of_birth', formattedDob)
+        .eq('phone', values.phone)
+        .eq('address', values.address)
+        .ilike('full_name', `${values.full_name}%`)
+
+      if (checkError) {
+        setError(checkError.message)
+        setLoading(false)
+        return
+      }
+
+      // Determine the duplicate count
+      let finalName = values.full_name
+      if (existingMembers && existingMembers.length > 0) {
+        // Count how many duplicates already exist
+        const duplicateCount = existingMembers.length
+        finalName = `${values.full_name} ${duplicateCount}`
+      }
+
+      // Insert the member with the potentially modified name
       const { data: member, error: insertError } = await supabase
         .from('members')
         .insert({
-          full_name: values.full_name,
+          full_name: finalName,
           gender: values.gender || null,
-          date_of_birth: format(values.date_of_birth, 'yyyy-MM-dd'),
+          date_of_birth: formattedDob,
           phone: values.phone,
           email: values.email || null,
           address: values.address || null,
@@ -168,28 +195,73 @@ export default function NewMemberPage() {
               <div className="space-y-2 sm:space-y-3">
                 <FormLabel className="text-sm sm:text-base font-semibold text-gray-700">Profile Picture</FormLabel>
                 <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 p-4 sm:p-5 lg:p-6 rounded-lg sm:rounded-xl bg-gradient-to-br from-blue-50 to-yellow-50 border-2 border-blue-100">
-                  {previewUrl ? (
-                    <img
-                      src={previewUrl}
-                      alt="Preview"
-                      className="h-20 w-20 sm:h-24 sm:w-24 lg:h-28 lg:w-28 rounded-xl sm:rounded-2xl object-cover border-3 sm:border-4 border-white shadow-xl ring-2 ring-blue-200 flex-shrink-0"
-                    />
-                  ) : (
-                    <div className="h-20 w-20 sm:h-24 sm:w-24 lg:h-28 lg:w-28 rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-200 to-yellow-200 flex items-center justify-center shadow-lg flex-shrink-0">
-                      <Upload className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-blue-900" />
-                    </div>
-                  )}
+                  <div 
+                    onClick={() => setShowPhotoOptions(true)}
+                    className="cursor-pointer group relative"
+                  >
+                    {previewUrl ? (
+                      <div className="relative">
+                        <img
+                          src={previewUrl}
+                          alt="Preview"
+                          className="h-20 w-20 sm:h-24 sm:w-24 lg:h-28 lg:w-28 rounded-xl sm:rounded-2xl object-cover border-3 sm:border-4 border-white shadow-xl ring-2 ring-blue-200 flex-shrink-0"
+                        />
+                        <div className="absolute inset-0 bg-black/40 rounded-xl sm:rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <Camera className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="h-20 w-20 sm:h-24 sm:w-24 lg:h-28 lg:w-28 rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-200 to-yellow-200 flex items-center justify-center shadow-lg flex-shrink-0 group-hover:scale-105 transition-transform">
+                        <Upload className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-blue-900" />
+                      </div>
+                    )}
+                  </div>
                   <div className="flex-1 w-full">
+                    <p className="text-xs sm:text-sm text-gray-600 font-medium mb-2">
+                      Tap the icon to take a photo or upload from device (optional)
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => cameraInputRef.current?.click()}
+                        disabled={loading}
+                        className="flex-1 border-blue-200 hover:bg-blue-50"
+                      >
+                        <Camera className="h-4 w-4 mr-2" />
+                        Camera
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={loading}
+                        className="flex-1 border-blue-200 hover:bg-blue-50"
+                      >
+                        <ImageIcon className="h-4 w-4 mr-2" />
+                        Upload
+                      </Button>
+                    </div>
+                    {/* Hidden file inputs */}
                     <Input
+                      ref={cameraInputRef}
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      onChange={handleFileChange}
+                      disabled={loading}
+                      className="hidden"
+                    />
+                    <Input
+                      ref={fileInputRef}
                       type="file"
                       accept="image/*"
                       onChange={handleFileChange}
                       disabled={loading}
-                      className="border-2 border-blue-200 focus:border-blue-900 text-sm sm:text-base"
+                      className="hidden"
                     />
-                    <p className="text-xs sm:text-sm text-gray-600 mt-2 font-medium">
-                      Upload a profile photo (optional)
-                    </p>
                   </div>
                 </div>
               </div>
@@ -329,7 +401,7 @@ export default function NewMemberPage() {
                     <FormLabel className="text-sm sm:text-base font-semibold text-gray-700">Phone Number *</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="+1 (555) 123-4567" 
+                        placeholder="+233 *********" 
                         {...field} 
                         disabled={loading}
                         className="h-10 sm:h-11 lg:h-12 text-sm sm:text-base border-2 border-gray-200 focus:border-blue-900"
@@ -367,7 +439,7 @@ export default function NewMemberPage() {
                 name="address"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm sm:text-base font-semibold text-gray-700">Address</FormLabel>
+                    <FormLabel className="text-sm sm:text-base font-semibold text-gray-700">Address *</FormLabel>
                     <FormControl>
                       <Input 
                         placeholder="123 Main St, City, State ZIP" 

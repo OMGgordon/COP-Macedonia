@@ -27,7 +27,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { CalendarIcon, Upload } from 'lucide-react'
+import { CalendarIcon, Upload, Camera, Image as ImageIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import React from 'react'
 
@@ -39,7 +39,7 @@ const memberFormSchema = z.object({
   }),
   phone: z.string().min(10, 'Phone number must be at least 10 characters'),
   email: z.string().email('Invalid email address').optional().or(z.literal('')),
-  address: z.string().optional(),
+  address: z.string().min(1, 'Address is required'),
 })
 
 type MemberFormValues = z.infer<typeof memberFormSchema>
@@ -55,6 +55,8 @@ export function EditMemberClient({ member }: EditMemberClientProps) {
   const [error, setError] = useState<string | null>(null)
   const [profilePicture, setProfilePicture] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(member.profile_picture_url)
+  const fileInputRef = React.useRef<HTMLInputElement>(null)
+  const cameraInputRef = React.useRef<HTMLInputElement>(null)
 
   const form = useForm<MemberFormValues>({
     resolver: zodResolver(memberFormSchema),
@@ -162,28 +164,70 @@ export function EditMemberClient({ member }: EditMemberClientProps) {
               <div className="space-y-2">
                 <FormLabel className="text-sm sm:text-base">Profile Picture</FormLabel>
                 <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
-                  {previewUrl ? (
-                    <img
-                      src={previewUrl}
-                      alt="Preview"
-                      className="h-20 w-20 sm:h-24 sm:w-24 rounded-full object-cover flex-shrink-0"
-                    />
-                  ) : (
-                    <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                      <Upload className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground" />
-                    </div>
-                  )}
+                  <div className="cursor-pointer group relative">
+                    {previewUrl ? (
+                      <div className="relative">
+                        <img
+                          src={previewUrl}
+                          alt="Preview"
+                          className="h-20 w-20 sm:h-24 sm:w-24 rounded-full object-cover flex-shrink-0"
+                        />
+                        <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <Camera className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-muted flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                        <Upload className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground" />
+                      </div>
+                    )}
+                  </div>
                   <div className="w-full">
+                    <p className="text-xs sm:text-sm text-muted-foreground mb-2">
+                      Tap the icon to take a photo or upload from device
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => cameraInputRef.current?.click()}
+                        disabled={loading}
+                        className="flex-1"
+                      >
+                        <Camera className="h-4 w-4 mr-2" />
+                        Camera
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={loading}
+                        className="flex-1"
+                      >
+                        <ImageIcon className="h-4 w-4 mr-2" />
+                        Upload
+                      </Button>
+                    </div>
+                    {/* Hidden file inputs */}
                     <Input
+                      ref={cameraInputRef}
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      onChange={handleFileChange}
+                      disabled={loading}
+                      className="hidden"
+                    />
+                    <Input
+                      ref={fileInputRef}
                       type="file"
                       accept="image/*"
                       onChange={handleFileChange}
                       disabled={loading}
-                      className="text-sm sm:text-base"
+                      className="hidden"
                     />
-                    <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                      Upload a new photo to replace the current one
-                    </p>
                   </div>
                 </div>
               </div>
@@ -317,7 +361,7 @@ export function EditMemberClient({ member }: EditMemberClientProps) {
                   <FormItem>
                     <FormLabel className="text-sm sm:text-base">Phone Number *</FormLabel>
                     <FormControl>
-                      <Input placeholder="+1 (555) 123-4567" {...field} disabled={loading} className="h-10 sm:h-11 text-sm sm:text-base" />
+                      <Input placeholder="+233 *********" {...field} disabled={loading} className="h-10 sm:h-11 text-sm sm:text-base" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -351,7 +395,7 @@ export function EditMemberClient({ member }: EditMemberClientProps) {
                 name="address"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm sm:text-base">Address</FormLabel>
+                    <FormLabel className="text-sm sm:text-base">Address *</FormLabel>
                     <FormControl>
                       <Input placeholder="123 Main St, City, State ZIP" {...field} disabled={loading} className="h-10 sm:h-11 text-sm sm:text-base" />
                     </FormControl>
